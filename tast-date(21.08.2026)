@@ -1,0 +1,216 @@
+1 ) frog jump :
+
+import java.util.*;
+public class frogjump {
+    public static void main(String args[]){
+        Scanner obj=new Scanner(System.in);
+        int n=obj.nextInt();
+        int arr[]=new int[n];
+        for(int i=0;i<n;i++){
+            arr[i]=obj.nextInt();
+        }
+
+        int dp[]=new int[n];
+        dp[0]=0;
+        dp[1]=Math.abs(arr[0]-arr[1]);
+
+        for(int i=2;i<n;i++){
+            int j1=dp[i-1]+Math.abs(arr[i]-arr[i-1]);
+            int j2=dp[i-2]+Math.abs(arr[i]-arr[i-2]);
+            dp[i]=Math.min(j1,j2);
+        }
+
+        System.out.println(dp[n-1]);
+
+    }
+}
+
+
+2 ) frog jump with k distances :
+
+import java.util.Scanner;
+
+public class frogjumpwithk {
+    public static void main(String args[]){
+        Scanner obj=new Scanner(System.in);
+        int n=obj.nextInt();
+        int k=obj.nextInt();
+        int arr[]=new int[n];
+        for(int i=0;i<n;i++){
+            arr[i]=obj.nextInt();
+        }
+
+        int dp[]=new int[n];
+        dp[0]=0;
+        // dp[1]=Math.abs(arr[0]-arr[1]);
+        for(int i=1;i<n;i++){
+            
+            dp[i]=Integer.MAX_VALUE;
+            for(int j=i-1;j>=0 && i-j<=k ; j--){
+                int cost=dp[j]+Math.abs(arr[i]-arr[j]);
+                dp[i]=Math.min(cost,dp[i]);
+            }
+            
+            // int j2=Math.abs(arr[i]-dp[i-2]);
+            // dp[i]=Math.min(j1,j2);
+        }
+
+        System.out.println(dp[n-1]);
+        
+    }
+}
+
+
+
+
+
+SQL Problems
+
+Create Database company_db;
+use company_db;
+
+create table department ( dept_id INT Primary key , dept_name varchar(50), location varchar(50));
+
+INSERT INTO department (dept_id, dept_name, location)
+VALUES
+(10, 'Engineering', 'Chennai'),
+(20, 'Sales', 'Hyderabad'),
+(30, 'HR', 'Bengaluru'),
+(40, 'Research', 'Pune'),
+(50, 'Finance', 'Mumbai');
+
+create table employees ( emp_id INT primary key,
+emp_name varchar(50),
+dept_id INT ,manager_id INT,
+salary decimal(10,2),
+hire_date date,
+
+foreign key(dept_id) references department(dept_id),
+
+foreign key(manager_id) references employees(emp_id));
+
+
+INSERT INTO employees
+(emp_id, emp_name, dept_id, manager_id, salary, hire_date)
+VALUES
+(101, 'Arjun', 10, NULL, 90000, '2021-01-15'),
+(106, 'Divya', 20, NULL, 85000, '2019-06-25'),
+(102, 'Priya', 10, 101, 65000, '2022-03-10'),
+(103, 'Karthik', 20, 106, 55000, '2022-07-20'),
+(104, 'Meena', 30, NULL, 60000, '2020-11-05'),
+(105, 'Rahul', NULL, 101, 50000, '2023-02-12'),
+(107, 'Sanjay', 10, 101, 72000, '2021-09-17'),
+(108, 'Anitha', 40, NULL, 78000, '2020-04-30'),
+(109, 'Vikram', 20, 106, 48000, '2024-01-08');
+
+
+create table projects (project_id INT primary key , 
+project_name varchar(100),
+dept_id INT,
+budget DECIMAL(12,2),
+
+foreign key(dept_id) references department(dept_id)
+);
+
+INSERT INTO projects
+(project_id, project_name, dept_id, budget)
+VALUES
+(201, 'Banking App', 10, 500000),
+(202, 'Sales Portal', 20, 300000),
+(203, 'AI Research', 40, 800000),
+(204, 'Employee System', 30, 250000),
+(205, 'Cloud Migration', 10, 600000),
+(206, 'Audit Automation', 50, 350000);
+
+create table employee_project(
+emp_id int,
+project_id int,
+hours int,
+
+foreign key(emp_id) references employees(emp_id),
+
+foreign key(project_id) references projects(project_id)
+);
+
+INSERT INTO employee_project
+(emp_id, project_id, hours)
+VALUES
+(101, 201, 120),
+(102, 201, 100),
+(102, 205, 80),
+(103, 202, 110),
+(106, 202, 70),
+(107, 201, 90),
+(107, 205, 130),
+(108, 203, 150),
+(104, 204, 60);
+
+1)
+select e.emp_id , e.emp_name ,d.dept_name,d.location from 
+employees e inner join department d
+on e.dept_id=d.dept_id;
+2)
+select e.emp_name ,d.dept_name from employees as e 
+left join department d on e.dept_id =d.dept_id;
+3)
+select dept_name from department d 
+left join employees e on d.dept_id=e.dept_id
+where e.emp_id is null;
+4)
+select e.emp_name , p.project_name , d.dept_name ,ep.hours
+from employees e 
+join employee_project ep on e.emp_id=ep.emp_id
+join projects p on ep.project_id = p.project_id
+join department d on d.dept_id=d.dept_id; 
+5)
+select p.project_name, e.emp_name from projects p 
+left join employee_project ep on
+p.project_id=ep.project_id
+left join employees e 
+on ep.emp_id =e.emp_id;
+6)
+select e.emp_name as Employee,
+m.emp_name as Manager
+from employees e 
+left join employees m 
+on e.manager_id =m.emp_id;
+7)
+select e.emp_id , e.emp_name, count(ep.project_id) 
+as total_projects from employees e 
+join employee_project ep 
+on e.emp_id = ep.emp_id
+group by e.emp_id ,e.emp_name 
+having count(ep.project_id)>1;
+8)
+select d.dept_name, count(e.emp_id) as employee_count,
+avg(e.salary) as average_salary
+from department d left join employees e 
+on d.dept_id=e.dept_id
+group by d.dept_id,d.dept_name;
+
+9)
+SELECT
+    e.emp_name AS employee_name,
+    ed.dept_name AS employee_department,
+    p.project_name,
+    pd.dept_name AS project_department
+FROM employees e
+JOIN employee_project ep
+    ON e.emp_id = ep.emp_id
+JOIN projects p
+    ON ep.project_id = p.project_id
+JOIN department ed
+    ON e.dept_id = ed.dept_id
+JOIN department pd
+    ON p.dept_id = pd.dept_id
+WHERE e.dept_id <> p.dept_id;
+
+10)
+select p.project_id , p.project_name,d.dept_name,p.budget
+from projects p 
+join department d
+on p.dept_id = d.dept_id
+left join employee_project ep
+on p.project_id = ep.project_id
+where ep.project_id is null;
+
