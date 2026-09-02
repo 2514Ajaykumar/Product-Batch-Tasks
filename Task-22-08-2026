@@ -1,0 +1,432 @@
+1 delete and earn 
+class Solution {
+    // static int find(int nums[],int s,int end,int dp[]){
+        // int ls=0,rs=0;
+        // for(int i=ind-1;i>=0;i--){
+        //     if(nums[i]==a || nums[i]==b) continue;
+        //     ls+=nums[i];
+        // }
+
+        // for(int i=ind+1;i<nums.length;i++){
+        //     if(nums[i]==a || nums[i]==b) continue;
+        //     rs+=nums[i];
+        // }
+
+        // return nums[ind]+ls+rs;
+
+        // if(s==end) return 0;
+        // if(s>end) return 0;
+        // if(dp[s]!=-1) return dp[s];
+        // int nottake=find(nums,s+1,end,dp);
+        // int take=nums[s]+find(nums,s+2,end,dp);
+        // return dp[s]=Math.max(take,nottake);
+    // }
+    public int deleteAndEarn(int[] nums) {
+        int n=nums.length;
+        int max=0;
+        for(int i:nums){
+            max=Math.max(i,max);
+        }
+
+        int arr[]=new int[max+1];
+
+        for(int i:nums){
+            arr[i]+=i;
+        }
+        int dp[]=new int[max+1];
+        // Arrays.fill(dp,-1);
+        dp[0]=arr[0];
+        dp[1]=Math.max(arr[0],arr[1]);
+        for(int i=2;i<=max;i++){
+            dp[i]=Math.max(dp[i-1],dp[i-2]+arr[i]);
+        }
+
+        return dp[max];
+
+        // return find(arr,0,max,dp);
+    }
+}
+
+2 . 416. Partition Equal Subset Sum
+
+class Solution {
+    // public static boolean find(int nums[],int target,int dp[][],int n){
+    //     if(target==0){
+    //         return true;
+    //     }
+    //     if(n<=0){
+    //         return false;
+    //     }
+    //     if(dp[n][target]!=-1){
+    //         return dp[n][target]==1;
+    //     }
+    //     boolean ans=false;
+    //     if(nums[n-1]<=target){
+    //         boolean take=find(nums,target-nums[n-1],dp,n-1);
+    //         boolean nottake=find(nums,target,dp,n-1);
+    //         ans=take || nottake;
+    //     }else{
+    //         ans= find(nums,target,dp,n-1);
+    //     }
+
+    //     dp[n][target]=ans?1:0;
+    //     return ans;
+        
+    // }
+    public boolean canPartition(int[] nums) {
+        int n=nums.length;
+        int sum=0;
+        for(int i:nums){
+            sum+=i;
+        }
+        if(sum%2!=0) return false;
+        int tar=sum/2;
+        // int dp[][]=new int[n+1][target+1];
+        // for(int i=0;i<=n;i++){
+        //     Arrays.fill(dp[i],-1);
+        // }
+        // return find(nums,target,dp,n);
+        
+        boolean dp[]=new boolean[tar+1];
+        dp[0]=true;
+        for(int i=0;i<n;i++){
+            for(int j=tar;j>=nums[i];j--){
+                dp[j]=dp[j] || dp[j-nums[i]];
+            }
+        }
+        return dp[tar];
+    }
+}
+
+3 . 983. Minimum Cost For Tickets 
+
+class Solution {
+    HashSet<Integer>set=new HashSet<>();
+    public int mincostTickets(int[] days, int[] costs) {
+        int max=0;
+        for(int i:days){
+            // max=Math.max(i,max);
+            set.add(i);
+        }
+        int dp[]=new int[days[days.length-1]+1];
+        Arrays.fill(dp,-1);
+        return find(costs,days[0],dp,days);
+    }
+     int find(int costs[],int cur,int dp[],int days[]){
+        if(cur>days[days.length-1]) return 0;
+        if(dp[cur]!=-1) return dp[cur];
+
+        if(!set.contains(cur)){
+            return dp[cur]=find(costs,cur+1,dp,days);
+        }
+
+        int one=costs[0]+find(costs,cur+1,dp,days);
+        int two=costs[1]+find(costs,cur+7,dp,days);
+        int three=costs[2]+find(costs,cur+30,dp,days);
+        return dp[cur]=Math.min(one,Math.min(two,three));
+
+    }
+}
+
+4 . Last Stone - II
+
+class Solution {
+    public int lastStoneWeightII(int[] stones) {
+        int n=stones.length;
+        int max=0;
+        for(int i:stones){
+            max+=i;
+        }
+        int dp[][]=new int[n][max+1];
+        for(int i=0;i<n;i++){
+            Arrays.fill(dp[i],-1);
+        }
+        return find(0,0,0,stones,dp);
+    }
+    int find(int i,int sl,int sr,int arr[],int dp[][]){
+        if(i==arr.length){
+            return Math.abs(sl-sr);
+        }
+        //  here we can also do dp[i][sl] because we are expanding sl to sr and sr to sl so they are independing 
+        if(dp[i][sr]!=-1){
+            return dp[i][sr];
+        }
+
+        return dp[i][sr]=Math.min(find(i+1,sl+arr[i],sr,arr,dp),find(i+1,sl,sr+arr[i],arr,dp));
+    }
+}
+
+
+Boredom :
+
+
+import java.util.*;
+public class Main{
+    static long find(int arr[],long dp[],int i){
+        if(i>=arr.length) return 0;
+        if(dp[i]!=-1) return dp[i];
+
+        long notpick=find(arr,dp,i+1);
+        long pick=arr[i]+find(arr,dp,i+2);
+        
+        dp[i]=Math.max(pick,notpick);
+        return dp[i];
+    }
+    public static void main(String[] args) {
+        Scanner obj=new Scanner(System.in);
+        int n=obj.nextInt();
+        int arr[]=new int[n];
+        int max=100000;
+        for(int i=0;i<n;i++){
+            arr[i]=obj.nextInt();
+        }
+
+        int nums[]=new int[max+1];
+        HashMap<Integer,Integer>freq=new HashMap<>();
+        for(int i:arr){
+            freq.put(i,freq.getOrDefault(i,0)+1);
+        }
+
+        for(int key:freq.keySet()){
+            nums[key]+=key*freq.get(key);
+        }
+        long dp[]=new long[max+1];
+        Arrays.fill(dp,-1);
+
+        System.out.println(find(nums,dp,0));
+    }
+}
+
+
+C. Basketball Exercise
+
+import java.util.*;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        int n = sc.nextInt();
+
+        long[] row1 = new long[n];
+        long[] row2 = new long[n];
+
+        for (int i = 0; i < n; i++) {
+            row1[i] = sc.nextLong();
+        }
+
+        for (int i = 0; i < n; i++) {
+            row2[i] = sc.nextLong();
+        }
+
+        long dp1 = 0;
+        long dp2 = 0;
+
+        for (int i = 0; i < n; i++) {
+
+            long oldDp1 = dp1;
+            long oldDp2 = dp2;
+
+            dp1 = Math.max(oldDp1, oldDp2 + row1[i]);
+            dp2 = Math.max(oldDp2, oldDp1 + row2[i]);
+        }
+
+        System.out.println(Math.max(dp1, dp2));
+    }
+}
+
+B. Petr and a Combination Lock
+
+import java.util.*;
+
+public class Main {
+
+    static int[] arr;
+    static int n;
+
+    static boolean find(int i, int sum) {
+
+        if (i == n) {
+            return sum % 360 == 0;
+        }
+
+        if (find(i + 1, sum + arr[i])) {
+            return true;
+        }
+
+        if (find(i + 1, sum - arr[i])) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        n = sc.nextInt();
+
+        arr = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            arr[i] = sc.nextInt();
+        }
+
+        if (find(0, 0)) {
+            System.out.println("YES");
+        } else {
+            System.out.println("NO");
+        }
+
+        sc.close();
+    }
+}
+
+698A — Vacations
+
+import java.util.*;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        int n = sc.nextInt();
+        int[] a = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            a[i] = sc.nextInt();
+        }
+
+        int[][] dp = new int[n][3];
+
+        // Day 0
+        dp[0][0] = 1;
+        dp[0][1] = (a[0] == 1 || a[0] == 3) ? 0 : 1000000;
+        dp[0][2] = (a[0] == 2 || a[0] == 3) ? 0 : 1000000;
+
+        for (int i = 1; i < n; i++) {
+
+            // Rest today
+            dp[i][0] = Math.min(
+                dp[i - 1][0],
+                Math.min(dp[i - 1][1], dp[i - 1][2])
+            ) + 1;
+
+            // Contest today
+            if (a[i] == 1 || a[i] == 3) {
+                dp[i][1] = Math.min(
+                    dp[i - 1][0],
+                    dp[i - 1][2]
+                );
+            } else {
+                dp[i][1] = 1000000;
+            }
+
+            // Gym today
+            if (a[i] == 2 || a[i] == 3) {
+                dp[i][2] = Math.min(
+                    dp[i - 1][0],
+                    dp[i - 1][1]
+                );
+            } else {
+                dp[i][2] = 1000000;
+            }
+        }
+
+        System.out.println(
+            Math.min(
+                dp[n - 1][0],
+                Math.min(dp[n - 1][1], dp[n - 1][2])
+            )
+        );
+    }
+}
+
+1418C — Mortal Kombat Tower
+
+import java.util.*;
+
+public class Main {
+
+    static int[][] dp;
+    static int[] a;
+    static int n;
+
+    static int find(int i, int turn) {
+
+        if (i >= n) {
+            return 0;
+        }
+
+        if (dp[i][turn] != -1) {
+            return dp[i][turn];
+        }
+
+        int ans = Integer.MAX_VALUE;
+
+        if (turn == 0) {
+
+            // Friend kills 1 boss
+            int one = a[i] + find(i + 1, 1);
+
+            // Friend kills 2 bosses
+            int two = Integer.MAX_VALUE;
+
+            if (i + 1 < n) {
+                two = a[i] + a[i + 1] + find(i + 2, 1);
+            }
+
+            ans = Math.min(one, two);
+
+        } else {
+
+            // You kill 1 boss
+            int one = find(i + 1, 0);
+
+            // You kill 2 bosses
+            int two = Integer.MAX_VALUE;
+
+            if (i + 1 < n) {
+                two = find(i + 2, 0);
+            }
+
+            ans = Math.min(one, two);
+        }
+
+        return dp[i][turn] = ans;
+    }
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        int t = sc.nextInt();
+
+        while (t-- > 0) {
+
+            n = sc.nextInt();
+
+            a = new int[n];
+
+            for (int i = 0; i < n; i++) {
+                a[i] = sc.nextInt();
+            }
+
+            dp = new int[n][2];
+
+            for (int[] row : dp) {
+                Arrays.fill(row, -1);
+            }
+
+            System.out.println(find(0, 0));
+        }
+
+        sc.close();
+    }
+}
+
