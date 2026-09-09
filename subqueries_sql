@@ -1,0 +1,188 @@
+-- 1. Employees Above Their Department Average
+SELECT emp_id, emp_name, dept_id, salary
+FROM employees e
+WHERE salary > (
+    SELECT AVG(salary)
+    FROM employees
+    WHERE dept_id = e.dept_id
+);
+
+
+-- 2. Highest Paid Employee(s) in Every Department
+SELECT emp_id, emp_name, dept_id, salary
+FROM employees e
+WHERE salary = (
+    SELECT MAX(salary)
+    FROM employees
+    WHERE dept_id = e.dept_id
+);
+
+
+-- 3. Second Highest Distinct Salary
+SELECT MAX(salary) AS second_highest_salary
+FROM employees
+WHERE salary < (
+    SELECT MAX(salary)
+    FROM employees
+);
+
+
+-- 4. Employees Receiving the Second Highest Distinct Salary
+SELECT emp_id, emp_name, salary
+FROM employees
+WHERE salary = (
+    SELECT MAX(salary)
+    FROM employees
+    WHERE salary < (
+        SELECT MAX(salary)
+        FROM employees
+    )
+);
+
+
+-- 5. Employees Earning More Than Their Manager
+SELECT emp_id, emp_name, dept_id, salary, manager_id
+FROM employees e
+WHERE manager_id IS NOT NULL
+  AND salary > (
+      SELECT salary
+      FROM employees m
+      WHERE m.emp_id = e.manager_id
+  );
+
+
+-- 6. Managers Who Earn Less Than At Least One Direct Report
+SELECT e.emp_id, e.emp_name, e.dept_id, e.salary
+FROM employees e
+WHERE EXISTS (
+    SELECT 1
+    FROM employees r
+    WHERE r.manager_id = e.emp_id
+      AND e.salary < r.salary
+);
+
+
+-- 7. Departments Whose Average Salary Is Above Company Average
+SELECT dept_id
+FROM employees
+GROUP BY dept_id
+HAVING AVG(salary) > (
+    SELECT AVG(salary)
+    FROM employees
+);
+
+
+-- 8. Employees in Departments Whose Average Salary Is Above Company Average
+SELECT emp_id, emp_name, dept_id, salary
+FROM employees
+WHERE dept_id IN (
+    SELECT dept_id
+    FROM employees
+    GROUP BY dept_id
+    HAVING AVG(salary) > (
+        SELECT AVG(salary)
+        FROM employees
+    )
+);
+
+
+-- 9. Employees Earning More Than Every Employee in HR
+SELECT emp_id, emp_name, dept_id, salary
+FROM employees
+WHERE salary > ALL (
+    SELECT salary
+    FROM employees
+    WHERE dept_id = (
+        SELECT dept_id
+        FROM departments
+        WHERE dept_name = 'HR'
+    )
+);
+
+
+-- 10. Employees Earning More Than At Least One Research Employee
+SELECT emp_id, emp_name, dept_id, salary
+FROM employees
+WHERE salary > ANY (
+    SELECT salary
+    FROM employees
+    WHERE dept_id = (
+        SELECT dept_id
+        FROM departments
+        WHERE dept_name = 'Research'
+    )
+);
+
+
+-- 11. Departments Having No Projects
+SELECT dept_id, dept_name
+FROM departments d
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM projects p
+    WHERE p.dept_id = d.dept_id
+);
+
+
+-- 12. Employees Belonging to Departments With More Than One Project
+SELECT emp_id, emp_name, dept_id
+FROM employees e
+WHERE (
+    SELECT COUNT(*)
+    FROM projects p
+    WHERE p.dept_id = e.dept_id
+) > 1;
+
+
+-- 13. Employees in the Department of the Highest-Budget Project
+SELECT emp_id, emp_name, dept_id, salary
+FROM employees
+WHERE dept_id IN (
+    SELECT dept_id
+    FROM projects
+    WHERE budget = (
+        SELECT MAX(budget)
+        FROM projects
+    )
+);
+
+
+-- 14. Employee(s) With Salary Closest to Company Average
+SELECT emp_id, emp_name, salary
+FROM employees
+WHERE ABS(
+    salary - (
+        SELECT AVG(salary)
+        FROM employees
+    )
+) = (
+    SELECT MIN(
+        ABS(
+            salary - (
+                SELECT AVG(salary)
+                FROM employees
+            )
+        )
+    )
+    FROM employees
+);
+
+
+-- 15. Departments Whose Top Salary Exceeds Every Manager Salary in That Department
+SELECT DISTINCT e.dept_id
+FROM employees e
+WHERE e.salary = (
+    SELECT MAX(e2.salary)
+    FROM employees e2
+    WHERE e2.dept_id = e.dept_id
+)
+AND e.salary > ALL (
+    SELECT m.salary
+    FROM employees m
+    WHERE m.dept_id = e.dept_id
+      AND EXISTS (
+          SELECT 1
+          FROM employees r
+          WHERE r.manager_id = m.emp_id
+      )
+);
