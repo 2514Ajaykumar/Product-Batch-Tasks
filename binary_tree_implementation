@@ -1,0 +1,246 @@
+import java.util.*;
+
+public class Main {
+
+    static class Node {
+        int data;
+        Node left, right;
+
+        Node(int data) {
+            this.data = data;
+        }
+    }
+
+    // Insert into BST
+    static Node insert(Node root, int data) {
+        if (root == null) {
+            return new Node(data);
+        }
+
+        if (data < root.data) {
+            root.left = insert(root.left, data);
+        } else {
+            root.right = insert(root.right, data);
+        }
+
+        return root;
+    }
+
+    // ---------------------------------------------------
+    // 1. DELETE A NODE FROM BST
+    // ---------------------------------------------------
+
+    static Node delete(Node root, int key) {
+
+        if (root == null) {
+            return null;
+        }
+
+        // Search in left subtree
+        if (key < root.data) {
+            root.left = delete(root.left, key);
+        }
+
+        // Search in right subtree
+        else if (key > root.data) {
+            root.right = delete(root.right, key);
+        }
+
+        // Node found
+        else {
+
+            // Case 1: No child
+            if (root.left == null && root.right == null) {
+                return null;
+            }
+
+            // Case 2: Only right child
+            if (root.left == null) {
+                return root.right;
+            }
+
+            // Case 2: Only left child
+            if (root.right == null) {
+                return root.left;
+            }
+
+            // Case 3: Two children
+            Node successor = findMin(root.right);
+
+            root.data = successor.data;
+
+            root.right = delete(root.right, successor.data);
+        }
+
+        return root;
+    }
+
+    // Find minimum node
+    static Node findMin(Node root) {
+
+        while (root.left != null) {
+            root = root.left;
+        }
+
+        return root;
+    }
+
+    // ---------------------------------------------------
+    // 2. CHECK WHETHER BINARY TREE IS BST
+    // ---------------------------------------------------
+
+    static boolean isBST(Node root) {
+        return isBST(root, Long.MIN_VALUE, Long.MAX_VALUE);
+    }
+
+    static boolean isBST(Node root, long min, long max) {
+
+        if (root == null) {
+            return true;
+        }
+
+        if (root.data <= min || root.data >= max) {
+            return false;
+        }
+
+        return isBST(root.left, min, root.data)
+                && isBST(root.right, root.data, max);
+    }
+
+    // ---------------------------------------------------
+    // 3. KTH SMALLEST AND KTH LARGEST
+    // ---------------------------------------------------
+
+    static int count = 0;
+
+    static int kthSmallest(Node root, int k) {
+
+        if (root == null) {
+            return -1;
+        }
+
+        int left = kthSmallest(root.left, k);
+
+        if (left != -1) {
+            return left;
+        }
+
+        count++;
+
+        if (count == k) {
+            return root.data;
+        }
+
+        return kthSmallest(root.right, k);
+    }
+
+    static int kthLargest(Node root, int k) {
+
+        if (root == null) {
+            return -1;
+        }
+
+        int right = kthLargest(root.right, k);
+
+        if (right != -1) {
+            return right;
+        }
+
+        count++;
+
+        if (count == k) {
+            return root.data;
+        }
+
+        return kthLargest(root.left, k);
+    }
+
+    // ---------------------------------------------------
+    // 4. CHECK WHETHER BST IS BALANCED
+    // ---------------------------------------------------
+
+    static boolean isBalanced(Node root) {
+
+        return height(root) != -1;
+    }
+
+    static int height(Node root) {
+
+        if (root == null) {
+            return 0;
+        }
+
+        int leftHeight = height(root.left);
+
+        if (leftHeight == -1) {
+            return -1;
+        }
+
+        int rightHeight = height(root.right);
+
+        if (rightHeight == -1) {
+            return -1;
+        }
+
+        if (Math.abs(leftHeight - rightHeight) > 1) {
+            return -1;
+        }
+
+        return Math.max(leftHeight, rightHeight) + 1;
+    }
+
+    // ---------------------------------------------------
+    // INORDER TRAVERSAL
+    // ---------------------------------------------------
+
+    static void inorder(Node root) {
+
+        if (root == null) {
+            return;
+        }
+
+        inorder(root.left);
+        System.out.print(root.data + " ");
+        inorder(root.right);
+    }
+
+    // ---------------------------------------------------
+    // MAIN
+    // ---------------------------------------------------
+
+    public static void main(String[] args) {
+
+        Node root = null;
+
+        int[] values = {50, 30, 70, 20, 40, 60, 80};
+
+        for (int value : values) {
+            root = insert(root, value);
+        }
+
+        System.out.println("Original BST:");
+        inorder(root);
+
+        // 1. Delete
+        root = delete(root, 30);
+
+        System.out.println("\n\nAfter deleting 30:");
+        inorder(root);
+
+        // 2. Check BST
+        System.out.println("\n\nIs BST: " + isBST(root));
+
+        // 3. Kth smallest
+        int k = 2;
+
+        count = 0;
+        System.out.println("2nd Smallest: " + kthSmallest(root, k));
+
+        // 3. Kth largest
+        count = 0;
+        System.out.println("2nd Largest: " + kthLargest(root, k));
+
+        // 4. Balanced
+        System.out.println("Is Balanced: " + isBalanced(root));
+    }
+}
