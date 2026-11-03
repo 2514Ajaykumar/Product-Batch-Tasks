@@ -1,0 +1,271 @@
+Minimum Window Substring
+
+class Solution {
+    public String minWindow(String s, String t) {
+        if(s.length()<t.length())return "";
+        HashMap<Character,Integer>map1=new HashMap<>();
+        for(char ch:t.toCharArray()){
+            map1.put(ch,map1.getOrDefault(ch,0)+1);
+        }
+        HashMap<Character,Integer>map2=new HashMap<>();
+        int left=0;
+        int count=0;
+        int min=Integer.MAX_VALUE;
+        int index=0;
+        for(int i=0;i<s.length();i++){
+            char ch=s.charAt(i);
+            map2.put(ch,map2.getOrDefault(ch,0)+1);
+            if(map1.containsKey(ch) && map1.get(ch).intValue()==map2.get(ch).intValue()){
+                count++;
+            }
+            while(count==map1.size()){
+                if(min>i-left+1){
+                    min=i-left+1;
+                    index=left;
+                }
+                char lchar=s.charAt(left);
+                map2.put(lchar,map2.get(lchar)-1);
+                if(map1.containsKey(lchar) && map2.get(lchar)<map1.get(lchar)){
+                    count--;
+                }
+                left++;
+            }
+        }
+        return min==Integer.MAX_VALUE ? "":s.substring(index,index+min);
+    }
+}
+
+
+Merge Intervals
+
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        Arrays.sort(intervals,(a,b)->a[0]-b[0]);
+        ArrayList<int[]>res=new ArrayList<>();
+        int st=intervals[0][0];
+        int end=intervals[0][1];
+        for(int i=1;i<intervals.length;i++){
+            if(intervals[i][0]<=end){
+                end=Math.max(end,intervals[i][1]);
+            }
+            else{
+                res.add(new int[]{st,end});
+                st=intervals[i][0];
+                end=intervals[i][1];
+            }
+        }
+        res.add(new int[]{st,end});
+        return res.toArray(new int[res.size()][]);
+    }
+}
+
+
+Kth Largest Element in a Stream
+
+class KthLargest {
+    int k;
+    PriorityQueue<Integer>pq=new PriorityQueue<>();
+    public KthLargest(int k, int[] nums) {
+        this.k=k;
+        for(int num:nums){
+            pq.add(num);
+            if(pq.size()>k){
+                pq.poll();
+            }
+        }
+    }
+    
+    public int add(int val) {
+        pq.add(val);
+        if(pq.size()>k){
+            pq.poll();
+        }
+        return pq.peek();
+    }
+}
+
+
+Detect and Remove Cycle in Linked List
+
+public class Solution {
+    public ListNode detectCycle(ListNode head) {
+        ListNode slow=head;
+        ListNode fast=head;
+        while(fast!=null && fast.next!=null){
+            slow=slow.next;
+            fast=fast.next.next;
+            if(slow==fast)break;
+        }
+        if(fast==null || fast.next==null)return null;
+        slow=head;
+        while(slow!=fast){
+            slow=slow.next;
+            fast=fast.next;
+        }
+        return slow;
+    }
+}
+
+
+Lowest Common Ancestor in Binary Tree
+
+class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if(root==null || root==p || root==q)return root;
+        TreeNode left=lowestCommonAncestor(root.left,p,q);
+        TreeNode right=lowestCommonAncestor(root.right,p,q);
+        if(left==null)return right;
+        if(right==null)return left;
+        return root;
+    }
+}
+
+
+Shortest Path in Binary Matrix
+
+class Solution {
+    public int shortestPathBinaryMatrix(int[][] grid) {
+        int n=grid.length;
+        if(grid[0][0]==1)return -1;
+        Queue<int[]>q=new LinkedList<>();
+        q.add(new int[]{0,0});
+        grid[0][0]=1;
+        int dirs[][]={{1,0},{-1,0},{0,1},{0,-1},{1,1},{-1,1},{1,-1},{-1,-1}};
+        while(!q.isEmpty()){
+            int curr[]=q.poll();
+            int r=curr[0];
+            int c=curr[1];
+            int path=grid[r][c];
+            if(r==n-1 && c==n-1)return path;
+            for(int dir[]:dirs){
+                int x=r+dir[0];
+                int y=c+dir[1];
+                if(x>=0 && y>=0 && x<n && y<n && grid[x][y]==0){
+                    grid[x][y]=path+1;
+                    q.add(new int[]{x,y});
+                }
+            }
+        }
+        return -1;
+    }
+}
+
+
+
+Course Completion Order
+
+class Solution {
+    public int[] findOrder(int V, int[][] edges) {
+        ArrayList<ArrayList<Integer>>adj=new ArrayList<>();
+        for(int i=0;i<V;i++){
+            adj.add(new ArrayList<>());
+        }
+        for(int edge[]:edges){
+            int u=edge[0];
+            int v=edge[1];
+            adj.get(v).add(u);
+        }
+        int indeg[]=new int[V];
+        for(int i=0;i<V;i++){
+            for(int next:adj.get(i)){
+                indeg[next]++;
+            }
+        }
+        Queue<Integer>q=new LinkedList<>();
+        for(int i=0;i<V;i++){
+            if(indeg[i]==0){
+                q.add(i);
+            }
+        }
+        int ans[]=new int[V];
+        int count=0;
+        while(!q.isEmpty()){
+            int node=q.poll();
+            ans[count++]=node;
+            for(int next:adj.get(node)){
+                indeg[next]--;
+                if(indeg[next]==0){
+                    q.add(next);
+                }
+            }
+        }
+        if(count==V)return ans;
+        return new int[0];
+    }
+}
+
+
+Minimum Coins for Amount
+
+class Solution {
+    public int coinChange(int[] coins, int amount) {
+        int dp[]=new int[amount+1];
+        Arrays.fill(dp,amount+1);
+        dp[0]=0;
+        for(int coin:coins){
+            for(int i=coin;i<=amount;i++){
+                dp[i]=Math.min(dp[i],1+dp[i-coin]);
+            }
+        }
+        return dp[amount]>amount? -1:dp[amount];
+    }
+}
+
+
+Range Maximum Query with Updates
+
+import java.util.*;
+public class rangemaxfreq {
+    static int tree[];
+    static int arr[];
+    public static void build(int idx,int st,int end){
+        if(st==end){
+            tree[idx]=1;
+            return;
+        }
+        int mid=st+(end-st)/2;
+        build(2*idx+1,st,mid);
+        build(2*idx+2,mid+1,end);
+        tree[idx]=Math.max(tree[2*idx+1],tree[2*idx+2]);
+    }
+    public static int query(int idx,int st,int end,int l,int r){
+        if(l>end||r<st){
+            return 0;
+        }
+        if(l<=st&&end<=r){
+            return tree[idx];
+        }
+        int mid=st+(end-st)/2;
+        return Math.max(query(2*idx+1,st,mid,l,r),query(2*idx+2,mid+1,end,l,r));
+    }
+    public static int solve(int l,int r){
+        int ans=0;
+        int i=l;
+        while(i<=r){
+            int j=i;
+            while(j+1<=r&&arr[j+1]==arr[i]){
+                j++;
+            }
+            ans=Math.max(ans,j-i+1);
+            i=j+1;
+        }
+        return ans;
+    }
+    public static void main(String args[]){
+        Scanner sc=new Scanner(System.in);
+        int n=sc.nextInt();
+        arr=new int[n];
+        tree=new int[4*n];
+        for(int i=0;i<n;i++){
+            arr[i]=sc.nextInt();
+        }
+        build(0,0,n-1);
+        int q=sc.nextInt();
+        while(q-->0){
+            int l=sc.nextInt();
+            int r=sc.nextInt();
+            System.out.println(solve(l,r));
+        }
+        sc.close();
+    }
+}
